@@ -9,14 +9,14 @@ template outer(name: string, outerBody: stmt): stmt {.immediate.} =
     var oName {.inject.} = name
 
     # The implementation of outerSetup/Teardown when invoked by inner
-    template outerSetupImpl*: stmt {.immediate.} = discard
-    template outerTeardownImpl*: stmt {.immediate.} = discard
+    template outerSetupImpl*: stmt = discard
+    template outerTeardownImpl*: stmt = discard
 
     # Allow overriding of outerSetup/TeardownImpl
-    template outerSetup*(setupBody: stmt): stmt {.immediate.} =
-      template outerSetupImpl*: stmt {.immediate.} = setupBody
-    template outerTeardown*(teardownBody: stmt): stmt {.immediate.} =
-      template outerTeardownImpl*: stmt {.immediate.} = teardownBody
+    template outerSetup*(setupBody: stmt): stmt {.immediate.} = # {.immediate.} makes {.inject.}'s availabe to setupBody
+      template outerSetupImpl*: stmt = setupBody
+    template outerTeardown*(teardownBody: stmt): stmt {.immediate.} = # {.immediate.} makes {.inject.}'s available to teardownBody
+      template outerTeardownImpl*: stmt = teardownBody
 
     # The inner template runs innerBody and supports optional setup/teardown. It
     # also catches exceptions
@@ -38,12 +38,11 @@ echo ""
 # Define outerSetup/Teardown
 outer "outer1-here":
   outerSetup:
-    echo "outer1Setup"
+    echo "outer1Setup: ", oName, ".", iName
   outerTeardown:
-    echo "outer1Teardown"
+    echo "outer1Teardown: ", oName, ".", iName
   inner "inner1-here":
-    echo "inner1-here: oName=", oName, " iName=", iName
-    echo "do'n inner1"
+    echo "inner1-here: ", oName, ".", iName
 echo ""
 
 # Redefine outerSetup/Teardown
